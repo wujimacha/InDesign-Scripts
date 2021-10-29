@@ -10,8 +10,7 @@ var styles = [
             re: '^>\\s+([^\\n]+)$',
             to: '$1'
         }]
-    },
-    {
+    }, {
         tag: 'h1',
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
@@ -19,36 +18,32 @@ var styles = [
             re: '^#\\s+(.+)$',
             to: '$1'
         }]
-    },
-    {
-		tag: 'h2',
+    }, {
+        tag: 'h2',
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
             re: '^#{2}\\s+(.+)$',
             to: '$1'
         }]
-    },
-    {
-		tag: 'h3',
+    }, {
+        tag: 'h3',
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
             re: '^#{3}\\s+(.+)$',
             to: '$1'
         }]
-    },
-    {
-		tag: 'h4',
+    }, {
+        tag: 'h4',
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
             re: '^#{4}\\s+(.+)$',
             to: '$1'
         }]
-    },
-    {
-		tag: 'strong',
+    }, {
+        tag: 'strong',
         type: StyleType.CHARACTER_STYLE_TYPE,
         linked: undefined,
         rules: [
@@ -61,9 +56,8 @@ var styles = [
                 to: '$2'
             }
         ]
-    },
-    {
-		tag: 'em',
+    }, {
+        tag: 'em',
         type: StyleType.CHARACTER_STYLE_TYPE,
         linked: undefined,
         rules: [
@@ -76,9 +70,8 @@ var styles = [
                 to: '$1'
             }
         ]
-    },
-    {
-		tag: 'a',  // Special case
+    }, {
+        tag: 'a',  // Special case
         type: StyleType.CHARACTER_STYLE_TYPE,
         linked: undefined,
         rules: [{

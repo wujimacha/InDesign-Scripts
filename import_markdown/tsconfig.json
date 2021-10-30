@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "ES3",
         "rootDir": ".",
-        "outFile": "../import_markdown_test.jsx",
+        "outFile": "../import_markdown.jsx",
         "module": "None",
         "noLib": true,
         "removeComments": true,

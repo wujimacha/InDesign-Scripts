@@ -21,7 +21,7 @@ let styles: Style[] = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^>\\s*(.*)',
+            re: '^>\\s*(.*$)',
             to: '$1'
         }]
     }, {
@@ -29,7 +29,7 @@ let styles: Style[] = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#\\s+(.*)',
+            re: '^#\\s+(.*$)',
             to: '$1'
         }]
     }, {
@@ -37,7 +37,7 @@ let styles: Style[] = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#{2}\\s+(.*)',
+            re: '^#{2}\\s+(.*$)',
             to: '$1'
         }]
     }, {
@@ -45,7 +45,7 @@ let styles: Style[] = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#{3}\\s+(.*)',
+            re: '^#{3}\\s+(.*$)',
             to: '$1'
         }]
     }, {
@@ -53,7 +53,7 @@ let styles: Style[] = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#{4}\\s+(.*)',
+            re: '^#{4}\\s+(.*$)',
             to: '$1'
         }]
     }, {

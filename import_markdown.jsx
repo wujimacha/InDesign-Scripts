@@ -1,47 +1,46 @@
-var selection
-var source
-
+var _selection;
+var source;
 var styles = [
     {
         tag: 'blockquote',
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^>\\s+([^\\n]+)$',
-            to: '$1'
-        }]
+                re: '^>\\s*(.*$)',
+                to: '$1'
+            }]
     }, {
         tag: 'h1',
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#\\s+(.+)$',
-            to: '$1'
-        }]
+                re: '^#\\s+(.*$)',
+                to: '$1'
+            }]
     }, {
         tag: 'h2',
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#{2}\\s+(.+)$',
-            to: '$1'
-        }]
+                re: '^#{2}\\s+(.*$)',
+                to: '$1'
+            }]
     }, {
         tag: 'h3',
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#{3}\\s+(.+)$',
-            to: '$1'
-        }]
+                re: '^#{3}\\s+(.*$)',
+                to: '$1'
+            }]
     }, {
         tag: 'h4',
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#{4}\\s+(.+)$',
-            to: '$1'
-        }]
+                re: '^#{4}\\s+(.*$)',
+                to: '$1'
+            }]
     }, {
         tag: 'strong',
         type: StyleType.CHARACTER_STYLE_TYPE,
@@ -71,172 +70,143 @@ var styles = [
             }
         ]
     }, {
-        tag: 'a',  // Special case
+        tag: 'a',
         type: StyleType.CHARACTER_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '\\[([^\\[]+)\\]\\(([^\\(]+)\\)',
-            to: '$1'
-        }]
+                re: '\\[([^\\[]+)\\]\\(([^\\(]+)\\)',
+                to: '$1'
+            }]
     }
-]
-
-function showInsertDialogue() {
-    var insertDialogue = new Window("dialog", 'Insert Markdown')
-    var filenameLabel
-
-    var basicPara = { linked: undefined }
-
-    var importBtn
-    var closeBtn
-    var confirmBtn
-
-    var paraStyleNames = []
-    var paraStyles = app.activeDocument.paragraphStyles
-    for (var i = 0; i < paraStyles.length; ++i) {
-        paraStyleNames.push(paraStyles[i].name)
+];
+var document = app.activeDocument;
+var paragraphStyles = document.paragraphStyles;
+var characterStyles = document.characterStyles;
+var InsertDialogue = (function () {
+    function InsertDialogue() {
+        this.dialogue = new Window('dialog', "Insert Markdown");
+        this.basicStyle = { linked: undefined };
+        this.paragraphStyleNames = [];
+        this.characterStyleNames = [];
+        if (!this.validateSelection()) {
+            return;
+        }
+        for (var i = 0; i < paragraphStyles.length; ++i) {
+            this.paragraphStyleNames.push(paragraphStyles[i].name);
+        }
+        for (var i = 0; i < characterStyles.length; ++i) {
+            this.characterStyleNames.push(characterStyles[i].name);
+        }
+        this.UI();
+        if (this.dialogue.show()) {
+            return;
+        }
+        this.applyStyles();
     }
-    var characterStyleNames = []
-    var characterStyles = app.activeDocument.characterStyles
-    for (var i = 0; i < characterStyles.length; ++i) {
-        characterStyleNames.push(characterStyles[i].name)
-    }
-
-    function importMarkdown() {
-        var file = File.openDialog('prompt', '*.md', false)
+    InsertDialogue.prototype.validateSelection = function () {
+        _selection = app.activeDocument.selection[0];
+        if (_selection && _selection instanceof TextFrame) {
+            var selections = app.activeDocument.selection;
+            if (selections.length === 1) {
+                return true;
+            }
+            else {
+                alert('Multiple selections. ');
+                return false;
+            }
+        }
+        else {
+            alert(String(_selection) + ' is not a text frame. ');
+            return false;
+        }
+    };
+    InsertDialogue.prototype.importMarkdown = function () {
+        var file = File.openDialog('prompt', '*.md', false);
         if (file) {
-            var res = file.open('r')
+            var res = file.open('r');
             if (res) {
-                confirmBtn.enabled = true
-                filenameLabel.text = file.absoluteURI
-                source = file.read()
-            } else { confirmBtn.enabled = false }
-            file.close()
-        } else { confirmBtn.enabled = false }
-    }
-
-    function grep(target, style) {
+                this.confirmButton.enabled = true;
+                this.filenameLabel.text = file.absoluteURI;
+                source = file.read();
+            }
+            else {
+                this.confirmButton.enabled = false;
+            }
+            file.close();
+        }
+        else {
+            this.confirmButton.enabled = false;
+        }
+    };
+    InsertDialogue.prototype.applyGREP = function (target, style) {
+        var item = style.linked.selection;
         for (var i = 0; i < style.rules.length; ++i) {
-            app.findGrepPreferences.properties = { findWhat: style.rules[i].re }
-            app.changeGrepPreferences.properties = style.type === StyleType.PARAGRAPH_STYLE_TYPE ? {
-                changeTo: style.rules[i].to,
-                appliedParagraphStyle: paraStyles[style.linked.selection.index]
-            } : {
-                changeTo: style.rules[i].to, 
-                appliedCharacterStyle: characterStyles[style.linked.selection.index]
+            var findGrepPreferences = app.findGrepPreferences;
+            var changeGrepPreferences = app.changeGrepPreferences;
+            findGrepPreferences.findWhat = style.rules[i].re;
+            changeGrepPreferences.changeTo = style.rules[i].to;
+            if (style.type === StyleType.PARAGRAPH_STYLE_TYPE) {
+                changeGrepPreferences.appliedParagraphStyle = paragraphStyles[item.index];
             }
-
-            target.changeGrep()
-
-            app.findGrepPreferences = NothingEnum.nothing
-            app.changeGrepPreferences = NothingEnum.nothing
+            else {
+                changeGrepPreferences.appliedCharacterStyle = characterStyles[item.index];
+            }
+            target.changeGrep(false);
+            app.findGrepPreferences = app.changeGrepPreferences =
+                NothingEnum.NOTHING;
         }
-    }
-
-    function applyStyles() {
-        selection.contents = source.replace(/\n+/g, '\r')
-
-        selection.paragraphs.everyItem().appliedParagraphStyle = 
-            paraStyles[basicPara.linked.selection.index]
-
+    };
+    InsertDialogue.prototype.applyStyles = function () {
+        _selection.contents = source.replace(/\n+/g, '\r');
+        _selection.paragraphs.anyItem().applyParagraphStyle(paragraphStyles[this.basicStyle.linked.selection.index], true);
         for (var i = 0; i < styles.length; ++i) {
-            grep(selection.parentStory, styles[i])
+            this.applyGREP(_selection.parentStory, styles[i]);
         }
-    }
-
-    with (insertDialogue) {
-        alignChildren = [ 'fill', 'fill' ]
-
-        var fileGroup = add('Group')
-        with (fileGroup) {
-            filenameLabel = add("statictext", undefined, "[Open Markdown]")
-            filenameLabel.alignment = [ 'fill', 'middle' ] 
-
-            importBtn = add('button', undefined, 'Import...')
-            importBtn.alignment = [ 'right', 'middle' ]
-            importBtn.onClick = function() { importMarkdown() }
+    };
+    InsertDialogue.prototype.UI = function () {
+        var _this = this;
+        this.dialogue.alignChildren = 'fill';
+        var fileGroup = this.dialogue.add('group');
+        this.filenameLabel = fileGroup.add('statictext', undefined, "[Empty]");
+        this.filenameLabel.alignment = ['fill', 'middle'];
+        this.importButton = fileGroup.add('button', undefined, 'Import...');
+        this.importButton.alignment = ['right', 'middle'];
+        this.importButton.onClick = function () { return _this.importMarkdown(); };
+        var styleGroup = this.dialogue.add('group');
+        styleGroup.alignChildren = ['fill', 'fill'];
+        var paragraphStylePanel = styleGroup.add('panel', undefined, 'Paragraph Styles');
+        paragraphStylePanel.alignChildren = ['fill', 'top'];
+        var paragraphStyleDropDownList = function (label) {
+            var dropDownList = paragraphStylePanel.add('dropdownlist', undefined, _this.paragraphStyleNames);
+            dropDownList.selection = 1;
+            dropDownList.text = label;
+            return dropDownList;
+        };
+        this.basicStyle.linked = paragraphStyleDropDownList('Basic:');
+        styles[0].linked = paragraphStyleDropDownList('Quote:');
+        for (var i = 1; i <= 4; ++i) {
+            styles[i].linked = paragraphStyleDropDownList('Heading' + i.toString() + ':');
         }
-        
-        var styleGroup = add('group')
-        with (styleGroup) {
-            alignChildren = [ 'fill', 'fill' ]
-
-            var paraStylePanel = add('panel', undefined, 'Paragraph Styles')
-            with (paraStylePanel) {
-                alignChildren = [ 'fill', 'top' ]
-
-                function styleDropdownList() {
-                    return add('dropdownlist', undefined, paraStyleNames)
-                }
-
-                var p = basicPara.linked = styleDropdownList()
-                p.text = 'Basic:'
-                p.selection = 1
-                
-                var blockquote = styles[0].linked = styleDropdownList()
-                blockquote.text = 'Quote:'
-                blockquote.selection = 1
-
-                for (var i = 1; i <= 4; ++i) {
-                    var heading = styles[i].linked = styleDropdownList() 
-                    heading.text = 'Heading ' + i + ':'
-                    heading.selection = 1
-                }
-            }
-
-            var characterStylePanel = add('panel', undefined, 'Character Styles')
-            with (characterStylePanel) {
-                alignChildren = [ 'fill', 'top' ]
-
-                function styleDropdownList() {
-                    return add('dropdownlist', undefined, characterStyleNames)
-                }
-
-                var strong = styles[5].linked = styleDropdownList() 
-                strong.text = 'Bold:'
-                strong.selection = 0
-
-                var em = styles[6].linked = styleDropdownList()
-                em.text = 'Emphasis:'
-                em.selection = 0
-
-                var a = styles[7].linked = styleDropdownList()
-                a.text = 'Link:'
-                a.selection = 0
-            }
-        }
-
-        var instructBtns = add('group')
-        with (instructBtns) {
-            closeBtn = add('button', undefined, 'Close')
-            closeBtn.alignment = [ 'right', 'middle' ]
-            // helpTip
-            closeBtn.onClick = function() { close(1) }
-
-            confirmBtn = add('button', undefined, 'Insert')
-            confirmBtn.alignment = [ 'right', 'middle' ]
-            confirmBtn.onClick = function() { close(0) } 
-            confirmBtn.enabled = false
-        }
-    }
-
-    if (insertDialogue.show()) { return }
-
-    applyStyles()
-}
-
-function validateSelection() {
-    selection = app.activeDocument.selection[0]
-    return (selection && selection instanceof TextFrame)
-}
-
-function main() {
-    if (!validateSelection()) {
-        alert(selection + ' is not a text frame.')
-        return
-    }
-
-    showInsertDialogue()
-}
-
-main()
+        var characterStylePanel = styleGroup.add('panel', undefined, 'Character Styles');
+        characterStylePanel.alignChildren = ['fill', 'top'];
+        var characterStyleDropDownList = function (label) {
+            var dropDownList = characterStylePanel.add('dropdownlist', undefined, _this.characterStyleNames);
+            dropDownList.selection = 0;
+            dropDownList.text = label;
+            return dropDownList;
+        };
+        styles[5].linked = characterStyleDropDownList('Bold:');
+        styles[6].linked = characterStyleDropDownList('Emphasis:');
+        styles[7].linked = characterStyleDropDownList('Link:');
+        var instructButtons = this.dialogue.add('group');
+        this.closeButton = instructButtons.add('button', undefined, 'Close');
+        this.closeButton.alignment = ['right', 'middle'];
+        this.closeButton.onClick = function () { return _this.dialogue.close(1); };
+        this.confirmButton = instructButtons.add('button', undefined, 'Insert');
+        this.confirmButton.alignment = ['right', 'middle'];
+        this.confirmButton.onClick = function () { return _this.dialogue.close(0); };
+        this.confirmButton.enabled = false;
+    };
+    return InsertDialogue;
+}());
+new InsertDialogue();

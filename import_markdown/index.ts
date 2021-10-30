@@ -21,7 +21,7 @@ let styles: Style[] = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^>\\s+([^\\n]+)$',
+            re: '^>\\s*(.*)',
             to: '$1'
         }]
     }, {
@@ -29,7 +29,7 @@ let styles: Style[] = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#\\s+(.+)$',
+            re: '^#\\s+(.*)',
             to: '$1'
         }]
     }, {
@@ -37,7 +37,7 @@ let styles: Style[] = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#{2}\\s+(.+)$',
+            re: '^#{2}\\s+(.*)',
             to: '$1'
         }]
     }, {
@@ -45,7 +45,7 @@ let styles: Style[] = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#{3}\\s+(.+)$',
+            re: '^#{3}\\s+(.*)',
             to: '$1'
         }]
     }, {
@@ -53,7 +53,7 @@ let styles: Style[] = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '^#{4}\\s+(.+)$',
+            re: '^#{4}\\s+(.*)',
             to: '$1'
         }]
     }, {
@@ -113,12 +113,67 @@ class InsertDialogue {
     paragraphStyleNames: string[] = []
     characterStyleNames: string[] = []
 
+
+    validateSelection(): boolean {
+        _selection = app.activeDocument.selection[0]
+
+        if (_selection && _selection instanceof TextFrame) {
+            let selections = app.activeDocument.selection as object[]
+            if (selections.length === 1) { return true } else {
+                alert('Multiple selections. ')
+                return false
+            }
+        } else {
+            alert(String(_selection) + ' is not a text frame. ')
+            return false
+        }
+    }
+
     importMarkdown() {
         let file = File.openDialog('prompt', '*.md', false)
         if (file) {
             let res = file.open('r')
             if (res) {
+                this.confirmButton.enabled = true
+                this.filenameLabel.text = file.absoluteURI  // TODO: Style URI
+                source = file.read()
+            } else { this.confirmButton.enabled = false }
+
+            file.close()
+        } else { this.confirmButton.enabled = false  }
+    }
+
+    applyGREP(target: Story, style: Style) {
+        const item = style.linked.selection as ListItem 
+
+        for (let i = 0; i < style.rules.length; ++i) {
+            let findGrepPreferences = app.findGrepPreferences as FindGrepPreference
+            let changeGrepPreferences = app.changeGrepPreferences as ChangeGrepPreference
+
+            findGrepPreferences.findWhat = style.rules[i].re
+            changeGrepPreferences.changeTo = style.rules[i].to
+            if (style.type === StyleType.PARAGRAPH_STYLE_TYPE) {
+                changeGrepPreferences.appliedParagraphStyle = paragraphStyles[item.index]
+            } else {
+                changeGrepPreferences.appliedCharacterStyle = characterStyles[item.index]
             }
+
+            target.changeGrep(false)
+
+            app.findGrepPreferences = app.changeGrepPreferences =
+                NothingEnum.NOTHING
+        }
+    }
+
+    applyStyles() {
+        _selection.contents = source.replace(/\n+/g, '\r')
+
+        _selection.paragraphs.anyItem().applyParagraphStyle(
+            paragraphStyles[this.basicStyle.linked.selection.index], true
+        )
+
+        for (let i = 0; i < styles.length; ++i) {
+            this.applyGREP(_selection.parentStory, styles[i])
         }
     }
 
@@ -141,7 +196,7 @@ class InsertDialogue {
         
             // BEGIN paragraphStylePanel
             let paragraphStylePanel = styleGroup.add('panel', undefined, 'Paragraph Styles')
-            paragraphStylePanel.alignChildren = 'top'
+            paragraphStylePanel.alignChildren = [ 'fill', 'top' ]
 
             const paragraphStyleDropDownList = (label: string) => {
                 let dropDownList = 
@@ -161,7 +216,7 @@ class InsertDialogue {
 
             // BEGIN characterStylePanel
             let characterStylePanel = styleGroup.add('panel', undefined, 'Character Styles')
-            characterStylePanel.alignChildren = 'top'
+            characterStylePanel.alignChildren = [ 'fill', 'top' ]
 
             const characterStyleDropDownList = (label: string) => {
                 let dropDownList = 
@@ -190,6 +245,8 @@ class InsertDialogue {
     }
 
     constructor() {
+        if (!this.validateSelection()) { return }
+
         for (let i = 0; i < paragraphStyles.length; ++i) {
             this.paragraphStyleNames.push(paragraphStyles[i].name)
         }
@@ -199,8 +256,9 @@ class InsertDialogue {
 
         this.UI()
 
-
         if (this.dialogue.show()) { return }
+
+        this.applyStyles()
     }
 }
 

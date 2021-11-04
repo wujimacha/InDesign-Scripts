@@ -9,7 +9,11 @@
     "type": "git",
     "url": "git+https://github.com/wujimacha/InDesign-Scripts.git"
   },
-  "keywords": [ "typographay", "indesign-scripts", "cjk" ],
+  "keywords": [
+    "typographay",
+    "indesign-scripts",
+    "cjk"
+  ],
   "author": "Toto Minai <the@unpopular.me> (https://chunghwa.asia)",
   "license": "MIT",
   "bugs": {

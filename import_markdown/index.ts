@@ -89,8 +89,8 @@ let styles: Style[] = [
         type: StyleType.CHARACTER_STYLE_TYPE,
         linked: undefined,
         rules: [{
-            re: '\\[([^\\[]+)\\]\\(([^\\(]+)\\)',
-            to: '$1'
+            re: '\\[([^\\[]+)\\]\\([^\\(]+\\)',
+            to: '$1',
         }]
     }
 ]
@@ -112,7 +112,6 @@ class InsertDialogue {
 
     paragraphStyleNames: string[] = []
     characterStyleNames: string[] = []
-
 
     validateSelection(): boolean {
         _selection = app.activeDocument.selection[0]
@@ -140,7 +139,7 @@ class InsertDialogue {
             } else { this.confirmButton.enabled = false }
 
             file.close()
-        } else { this.confirmButton.enabled = false  }
+        } else { this.confirmButton.enabled = false }
     }
 
     applyGREP(target: Story, style: Style) {
@@ -158,7 +157,24 @@ class InsertDialogue {
                 changeGrepPreferences.appliedCharacterStyle = characterStyles[item.index]
             }
 
-            target.changeGrep(false)
+            let texts = target.findGrep(false)
+            for (let j = 0; j < texts.length; ++j) {
+                let text = texts[j]
+                const originalText = text.contents as string
+                text.changeGrep(false)
+
+                if (style.tag === 'a') {
+                    const re = /\[[^\[]+\]\(([^\(]+)\)/
+                    const matched = re.exec(originalText) 
+                    const link = matched[1]
+
+                    let destination = document.hyperlinkURLDestinations.add(link)
+                    let source = document.hyperlinkTextSources.add(text)
+                    document.hyperlinks.add(source, destination, { name: text + '_' + j })
+                }
+            }
+
+            // let changed = target.changeGrep(false)
 
             app.findGrepPreferences = app.changeGrepPreferences =
                 NothingEnum.NOTHING
@@ -168,9 +184,13 @@ class InsertDialogue {
     applyStyles() {
         _selection.contents = source.replace(/\n+/g, '\r')
 
-        _selection.paragraphs.anyItem().applyParagraphStyle(
-            paragraphStyles[this.basicStyle.linked.selection.index], true
-        )
+        let paras = _selection.paragraphs.everyItem()
+        paras.applyCharacterStyle(characterStyles[0])  // Clear Character Style
+        paras.applyParagraphStyle(paragraphStyles[this.basicStyle.linked.selection.index], true)
+
+        document.hyperlinkTextSources.everyItem().remove()  // WARNING: This will remove all links
+        document.hyperlinks.everyItem().remove()
+        document.hyperlinkURLDestinations.everyItem().remove()
 
         for (let i = 0; i < styles.length; ++i) {
             this.applyGREP(_selection.parentStory, styles[i])

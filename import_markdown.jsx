@@ -14,7 +14,7 @@ var styles = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-                re: '^#\\s+(.*$)',
+                re: '^#\\s+(.*)$',
                 to: '$1'
             }]
     }, {
@@ -22,7 +22,7 @@ var styles = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-                re: '^#{2}\\s+(.*$)',
+                re: '^#{2}\\s+(.*)$',
                 to: '$1'
             }]
     }, {
@@ -30,7 +30,7 @@ var styles = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-                re: '^#{3}\\s+(.*$)',
+                re: '^#{3}\\s+(.*)$',
                 to: '$1'
             }]
     }, {
@@ -38,7 +38,7 @@ var styles = [
         type: StyleType.PARAGRAPH_STYLE_TYPE,
         linked: undefined,
         rules: [{
-                re: '^#{4}\\s+(.*$)',
+                re: '^#{4}\\s+(.*)$',
                 to: '$1'
             }]
     }, {
@@ -74,7 +74,7 @@ var styles = [
         type: StyleType.CHARACTER_STYLE_TYPE,
         linked: undefined,
         rules: [{
-                re: '\\[([^\\[]+)\\]\\(([^\\(]+)\\)',
+                re: '\\[([^\\[]+)\\]\\([^\\(]+\\)',
                 to: '$1'
             }]
     }
@@ -151,14 +151,32 @@ var InsertDialogue = (function () {
             else {
                 changeGrepPreferences.appliedCharacterStyle = characterStyles[item.index];
             }
-            target.changeGrep(false);
+            var texts = target.findGrep(false);
+            for (var j = 0; j < texts.length; ++j) {
+                var text = texts[j];
+                var originalText = text.contents;
+                text.changeGrep(false);
+                if (style.tag === 'a') {
+                    var re = /\[[^\[]+\]\(([^\(]+)\)/;
+                    var matched = re.exec(originalText);
+                    var link = matched[1];
+                    var destination = document.hyperlinkURLDestinations.add(link);
+                    var source_1 = document.hyperlinkTextSources.add(text);
+                    document.hyperlinks.add(source_1, destination, { name: text + '_' + j });
+                }
+            }
             app.findGrepPreferences = app.changeGrepPreferences =
                 NothingEnum.NOTHING;
         }
     };
     InsertDialogue.prototype.applyStyles = function () {
         _selection.contents = source.replace(/\n+/g, '\r');
-        _selection.paragraphs.anyItem().applyParagraphStyle(paragraphStyles[this.basicStyle.linked.selection.index], true);
+        var paras = _selection.paragraphs.everyItem();
+        paras.applyCharacterStyle(characterStyles[0]);
+        paras.applyParagraphStyle(paragraphStyles[this.basicStyle.linked.selection.index], true);
+        document.hyperlinkTextSources.everyItem().remove();
+        document.hyperlinks.everyItem().remove();
+        document.hyperlinkURLDestinations.everyItem().remove();
         for (var i = 0; i < styles.length; ++i) {
             this.applyGREP(_selection.parentStory, styles[i]);
         }

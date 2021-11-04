@@ -14,4 +14,4 @@ git clone https://github.com/wujimacha/InDesign-Scripts
 
 ### 導入 Markdown（`import_markdown.jsx`）
 
-導入 `.md` 到文本框並應用對應格式。須首先選中目標文本框，再運行程式。
+導入 `.md` 到文本框並應用對應格式。須首先選中目標文本框，再運行程式。注意：將複寫已有內容，包括既存鏈接。

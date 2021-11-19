@@ -1,6 +1,6 @@
 # InDesign Scripts 使用手冊
 
-以下內容將根據繁體字 InDesign 介面解說，其中術語若與恁語言相異，請見附後的「[介面術語對照](#)」。
+以下內容將根據繁體字 InDesign 介面解說，其中術語若與恁語言相異，請見附後的「[介面術語對照](#導入-markdownimport_markdownjsx-下載)」。
 
 ## 安裝 Scripts
 

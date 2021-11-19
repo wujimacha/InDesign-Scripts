@@ -28,7 +28,7 @@ git clone https://github.com/wujimacha/InDesign-Scripts
 
 ### 導入 Markdown（`import_markdown.jsx`） [下載](https://raw.githubusercontent.com/wujimacha/InDesign-Scripts/main/import_markdown.jsx)
 
-<img src="https://raw.githubusercontent.com/wujimacha/InDesign-Scripts/main/screenshots/import_markdown.gif" width="420" />
+<img src="https://raw.githubusercontent.com/wujimacha/InDesign-Scripts/main/screenshots/import_markdown.gif" alt="Import Markdown 演示" width="420" />
 
 1. 首先選中目標文本框，再雙擊運行 script；
 2. 在面板內導入 `.md` 文件；
@@ -38,9 +38,9 @@ git clone https://github.com/wujimacha/InDesign-Scripts
 
 ## 介面術語對照
 
-| 繁                        | 簡 | 日 |   |   |
-|--------------------------|----|----|---|---|
-| 視窗 → 工用程式 → 程式碼   |    |    |   |   |
-| 使用者                   |    |    |   |   |
-| 顯現在 Finder 中         |    |    |   |   |
-| 段落樣式、字元樣式        |    |    |   |   |
+| 繁                        | 簡 | 日 |
+|--------------------------|----|----|
+| 視窗 → 工用程式 → 程式碼   |    |    |
+| 使用者                   |    |    |
+| 顯現在 Finder 中         |    |    |
+| 段落樣式、字元樣式        |    |    |

@@ -6,7 +6,7 @@
 
 ### macOS
 
-1. 在 InDesign 中依次開啟 `視窗 → 工用程式 → 程式碼` 面板（快捷鍵為 `⌥⌘F11`）；
+1. 在 InDesign 中依次開啟 `視窗 → 公用程式 → 指令碼` 面板（快捷鍵為 `⌥⌘F11`）；
 2. 右鍵「使用者」文件夾、並點擊「顯現在 Finder 中」。一般會在 `/Users/[USERNAME]/Library/Preferences/Adobe InDesign/[VERSION]/[LANG]/Scripts/Scripts Panel`。其中 `[USERNAME]` 為用家名稱、`[VERSION]`、`[LANG]` 根據 InDesign 版本和語言會有所不同；
 3. 將 repo 根目錄下所需的 `.jsx` 文件拷貝於此。
 
@@ -20,7 +20,7 @@
 git clone https://github.com/wujimacha/InDesign-Scripts
 ```
 
-完成後，所有的 scripts 將以文件層級式顯示於「程式碼」面板。
+完成後，所有的 scripts 將以文件層級式顯示於「指令碼」面板。
 
 ## Scripts
 

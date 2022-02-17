@@ -1,6 +1,8 @@
-# InDesign Scripts 使用手冊
+# Markdown to InDesign Automation 使用说明
 
-以下內容將根據繁體字 InDesign 介面解說，其中術語若與恁語言相異，請見附後的「[介面術語對照](#介面術語對照)」。
+注：以下內容將根據繁體字 InDesign 介面解說，其中術語若與恁語言相異，請見附後的「[介面術語對照](#介面術語對照)」。
+
+將作品以 Markdown 格式自動導入到 InDesign 中。
 
 ## 安裝 Scripts
 
